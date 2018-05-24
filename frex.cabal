@@ -1,0 +1,34 @@
+Name:           frex
+Version:        0.0.1
+Build-Type:     Simple
+License:        MIT
+Cabal-version:  >= 1.8
+Author:         Tamara von Glehn <T.L.Von-Glehn@dpmms.cam.ac.uk>,
+                Ohad Kammar <ohad.kammar@cs.ox.ac.uk>,
+                Jeremy Yallop <yallop@gmail.com>,
+
+library
+  build-depends:   base,
+                   containers,
+                   multiset,
+                   template-haskell
+  exposed-modules: Data.Coproduct,
+                   Data.CMonoid,
+                   Data.CGroup,
+                   Data.Ring,
+                   Data.BoolRing,
+                   Data.DLattice,
+                   Data.PartiallyStatic
+  other-modules:   Data.Coproduct.Classes,
+                   Data.Coproduct.Instances
+  extensions:      UnicodeSyntax
+  ghc-options:    -O3 -fwarn-unused-imports
+  Hs-Source-Dirs:  src
+
+Executable test
+  build-depends:  base, containers, frex, multiset, template-haskell,
+                  bytestring
+  Main-is:        Test.hs
+  other-modules:  Printf, Power, LinAlg, InstanceLifting, CodeComparison
+  extensions:     UnicodeSyntax TemplateHaskell
+  Hs-Source-Dirs: test
