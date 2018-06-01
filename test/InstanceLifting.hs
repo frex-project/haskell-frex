@@ -11,9 +11,13 @@ import Data.Monoid
 import Data.PartiallyStatic
 import CodeComparison()
 import Language.Haskell.TH.Syntax (Lift)
+import Language.Haskell.TH.Lift
 
-deriving instance Lift a ⇒ Lift (Sum a)
-deriving instance Lift a ⇒ Lift (Product a)
+$(deriveLift ''Sum)
+$(deriveLift ''Product)
+
+-- deriving instance Lift a ⇒ Lift (Sum a)
+-- deriving instance Lift a ⇒ Lift (Product a)
 
 instance {-# OVERLAPS #-} Monoid m ⇒ Monoid (Code m) where
    mempty = [|| mempty ||]

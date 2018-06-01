@@ -27,8 +27,8 @@ library
 
 Executable test
   build-depends:  base, containers, frex, multiset, template-haskell,
-                  bytestring
+                  bytestring, th-lift
   Main-is:        Test.hs
-  other-modules:  Printf, Power, LinAlg, InstanceLifting, CodeComparison
+  other-modules:  Printf, Power, LinAlg, InstanceLifting, CodeComparison, Datatypes, IsDigit, All
   extensions:     UnicodeSyntax TemplateHaskell
   Hs-Source-Dirs: test
