@@ -60,8 +60,8 @@ initMN :: Ring r ⇒ Int → r
 initMN 0 = r₀
 initMN 1 = r₁
 initMN n | n < 0 = rneg (initMN (-n))
-         | odd n     = two ⊗ initMN ((n - 2) `div` 2) ⊕ r₁
-         | otherwise = two ⊗ initMN ((n - 2) `div` 2)
+         | odd n     = two ⊗ initMN (n `div` 2) ⊕ r₁
+         | otherwise = two ⊗ initMN (n `div` 2)
   where two = r₁ ⊕ r₁
 
 instance Ord x ⇒ Free Ring x where
