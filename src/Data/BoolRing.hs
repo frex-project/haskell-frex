@@ -68,5 +68,6 @@ instance Ord x ⇒ Free BoolRing x where
 
 newtype BoolRingOr n = BRO { bro :: n }
 
+instance BoolRing r ⇒ Semigroup (BoolRingOr r) where (BRO x) <> (BRO y) = BRO (x ⊕ y ⊕ (x ⊗ y))
 instance BoolRing r ⇒ Monoid (BoolRingOr r) where mempty = BRO r₀ ; mappend (BRO x) (BRO y) = BRO (x ⊕ y ⊕ (x ⊗ y))
 instance BoolRing r ⇒ CMonoid (BoolRingOr r)

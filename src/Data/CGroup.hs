@@ -19,9 +19,12 @@ instance Ord x ⇒ Free CGroup x where
            emit ((x,n):xs) | n < 0 = cinv (f x) `mappend` emit ((x,n+1):xs)
                            | otherwise = f x `mappend` emit ((x,n-1):xs)
 
+instance Ord x ⇒ Semigroup (FreeA CGroup x) where
+  CG x <> CG y = CG (Map.unionWith (+) x y)
+  
 instance Ord x ⇒ Monoid (FreeA CGroup x) where
   mempty = CG Map.empty
-  CG x `mappend` CG y = CG (Map.unionWith (+) x y)
+  
 
 instance Ord x ⇒ CMonoid (FreeA CGroup x)
 

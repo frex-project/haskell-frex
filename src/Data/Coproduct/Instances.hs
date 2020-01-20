@@ -12,6 +12,7 @@ import qualified Data.MultiSet as MultiSet
 import qualified Data.Set as Set
 
 import Data.CMonoid
+import Data.Semigroup
 import Data.CGroup
 import Data.Ring
 import Data.BoolRing
@@ -45,9 +46,8 @@ instance (Monoid a, Monoid b) ⇒ Coproduct Monoid a b where
            eva' (a `ConsA` m) = f a `mappend` eva' m
            eva' (b `ConsB` m) = g b `mappend` eva' m
 
-instance (Monoid α, Monoid β) ⇒ Monoid (Coprod Monoid α β) where
-  mempty = M Empty
-  M l `mappend` M r = l `mul` r
+instance (Monoid α, Monoid β) ⇒ Semigroup (Coprod Monoid α β) where
+  M l <> M r = l `mul` r
    where mul :: (Monoid a, Monoid b) ⇒
                  Alternate start a b → Alternate start' a b → Coprod Monoid a b
          l `mul` Empty = M l
@@ -65,6 +65,11 @@ instance (Monoid α, Monoid β) ⇒ Monoid (Coprod Monoid α β) where
          b `consB` ConsB b' m =  (b `mappend` b') `ConsB` m
          b `consB` r@(ConsA _ _) = b `ConsB` r
 
+
+
+instance (Monoid α, Monoid β) ⇒ Monoid (Coprod Monoid α β) where
+  mempty = M Empty
+  
 {-- Coproduct of sets --}
 class Set a
 instance Set a
@@ -91,14 +96,17 @@ instance (CMonoid a, CMonoid b) ⇒ Coproduct CMonoid a b where
 
 instance (CMonoid α, CMonoid β) ⇒ CMonoid (Coprod CMonoid α β) where
 
+instance (CMonoid α, CMonoid β) ⇒ Semigroup (Coprod CMonoid α β) where
+  C a b <> C a' b' = C (a `mappend` a') (b `mappend` b')
+  
 instance (CMonoid α, CMonoid β) ⇒ Monoid (Coprod CMonoid α β) where
   mempty = C mempty mempty
-  C a b `mappend` C a' b' = C (a `mappend` a') (b `mappend` b')
+  
 
 {-- Coproduct of abelian groups --}
 instance (CGroup a, CGroup b) ⇒ Coproduct CGroup a b where
    newtype Coprod CGroup a b = Cg { unCG :: Coprod CMonoid a b }
-     deriving (CMonoid, Monoid)
+     deriving (Semigroup, CMonoid, Monoid)
    inl = Cg . inl
    inr = Cg . inr
    eva f g = eva f g . unCG
@@ -108,7 +116,7 @@ instance (CGroup α, CGroup β) ⇒ CGroup (Coprod CGroup α β) where
 
 -- Free monoids
 instance Free Monoid x where
-   newtype FreeA Monoid x = P [x] deriving (Monoid)
+   newtype FreeA Monoid x = P [x] deriving (Semigroup, Monoid)
    pvar x = P [x]
    P [] `pbind` f = mempty
    P [x] `pbind` f = f x
