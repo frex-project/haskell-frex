@@ -19,27 +19,36 @@ $(deriveLift ''Product)
 -- deriving instance Lift a ⇒ Lift (Sum a)
 -- deriving instance Lift a ⇒ Lift (Product a)
 
+instance {-# OVERLAPS #-} Monoid m ⇒ Semigroup (Code m) where
+   x <> y = [|| $$x `mappend` $$y ||]
+  
 instance {-# OVERLAPS #-} Monoid m ⇒ Monoid (Code m) where
    mempty = [|| mempty ||]
-   x `mappend` y = [|| $$x `mappend` $$y ||] 
+   
+instance {-# OVERLAPS #-} Semigroup (Code String) where
+   x <> y = [|| $$x ++ $$y ||] 
 
 instance {-# OVERLAPS #-} Monoid (Code String) where
    mempty = [|| "" ||]
-   x `mappend` y = [|| $$x ++ $$y ||] 
 
 instance CGroup (Code Int) where
   cinv x = [|| - $$x ||]
 instance CMonoid (Code Int) where
+  
+instance Semigroup (Code Int) where
+  x <> y = [|| $$x + $$y ||]
+
 instance Monoid (Code Int) where
   mempty = [|| 0 ||]
-  mappend x y = [|| $$x + $$y ||]
 
 instance CMonoid (Code Bool) where
 instance CGroup (Code Bool) where
   cinv = id
+instance Semigroup (Code Bool) where
+  x <> y = [|| $$x && $$y ||]
 instance Monoid (Code Bool) where
   mempty = [|| True ||]
-  mappend x y = [|| $$x && $$y ||]
+
 instance BoolRing (Code Bool)
 
 instance Ring (Code Int) where

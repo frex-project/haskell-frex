@@ -77,8 +77,10 @@ instance Ring Double where (⊕) = (+); (⊗) = (*); rneg = negate; r₀ = 0; r�
 newtype RingAdd n = RA { ra :: n }
 newtype RingMul n = RM { rm :: n }
 
+instance Ring r ⇒ Semigroup (RingAdd r) where (RA x) <> (RA y) = RA (x ⊕ y)
 instance Ring r ⇒ Monoid (RingAdd r) where mempty = RA r₀ ; mappend (RA x) (RA y) = RA (x ⊕ y)
 instance Ring r ⇒ CMonoid (RingAdd r)
+instance Ring r ⇒ Semigroup (RingMul r) where (RM x) <> (RM y) = RM (x ⊗ y)
 instance Ring r ⇒ Monoid (RingMul r) where mempty = RM r₁ ; mappend (RM x) (RM y) = RM (x ⊗ y)
 instance Ring r ⇒ CMonoid (RingMul r)
 

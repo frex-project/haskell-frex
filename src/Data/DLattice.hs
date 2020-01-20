@@ -74,7 +74,9 @@ instance Ord x ⇒ Free DLattice x where
 newtype DLatticeAdd n = DA { da :: n }
 newtype DLatticeMul n = DM { dm :: n }
 
+instance DLattice r ⇒ Semigroup (DLatticeAdd r) where  (DA x) <> (DA y) = DA (x ⊕ y)
 instance DLattice r ⇒ Monoid (DLatticeAdd r) where mempty = DA r₀ ; mappend (DA x) (DA y) = DA (x ⊕ y)
 instance DLattice r ⇒ CMonoid (DLatticeAdd r)
+instance DLattice r ⇒ Semigroup (DLatticeMul r) where (DM x) <> (DM y) = DM (x ⊗ y)
 instance DLattice r ⇒ Monoid (DLatticeMul r) where mempty = DM r₁ ; mappend (DM x) (DM y) = DM (x ⊗ y)
 instance DLattice r ⇒ CMonoid (DLatticeMul r)
