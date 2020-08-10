@@ -8,3 +8,4 @@ A Typed Template Haskell library for structured multi-stage programming, describ
 
 See also: the [MetaOCaml version of frex](https://github.com/yallop/metaocaml-frex).
 
+![GitHub Actions status](https://github.com/yallop/haskell-frex/workflows/build/badge.svg)

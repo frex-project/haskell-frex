@@ -1,0 +1,13 @@
+on: [push]
+name: build
+jobs:
+  runhaskell:
+    name: Hello World
+    runs-on: ubuntu-latest # or macOS-latest, or windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-haskell@v1.1
+      - run: cabal configure
+      - run: cabal build
+      - run: bash -c "find dist-newstyle -type f -name test -exec {} \;"
+
