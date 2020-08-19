@@ -5,27 +5,26 @@ import Data.Coproduct
 import Language.Haskell.TH.Syntax
 import Control.Monad (liftM)
 
--- Variables 
-type Code a = Q (TExp a) -- (for now; more elaborate later)
+newtype Code a = Code { code :: Q (TExp a) }
 
 -- Free extension
-type FreeExt algebra α = Coprod algebra α (FreeA algebra (Code α))
+type FreeExt algebra name α = Coprod algebra α (FreeA algebra (name α))
 
-type FreeExtCon algebra α =
-  Coproduct algebra α (FreeA algebra (Code α))
+type FreeExtCon algebra name α =
+  Coproduct algebra α (FreeA algebra (name α))
 
-sta :: (algebra α, FreeExtCon algebra α) ⇒
-       α → FreeExt algebra α
+sta :: (algebra α, FreeExtCon algebra name α) ⇒
+       α → FreeExt algebra name α
 sta = inl
 
-dyn :: (Free algebra (Code α), FreeExtCon algebra α) ⇒
-       Code α → FreeExt algebra α
+dyn :: (Free algebra (name α), FreeExtCon algebra name α) ⇒
+       name α → FreeExt algebra name α
 dyn = inr . pvar
 
 cd :: (Lift α, Free algebra (Code α), algebra (Code α),
-       FreeExtCon algebra α) ⇒
-      FreeExt algebra α → Code α
+       FreeExtCon algebra Code α) ⇒
+      FreeExt algebra Code α → Code α
 cd = eva tlift (`pbind` id)
 
-tlift :: Lift α ⇒ α → Q (TExp α)
-tlift = liftM TExp . lift
+tlift :: Lift α ⇒ α → Code α
+tlift = Code . liftM TExp . lift
