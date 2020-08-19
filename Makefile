@@ -1,10 +1,12 @@
+TESTDIR=$(shell ls -d dist dist-newstyle 2>/dev/null || true)
+
 all: build
 
 build:
 	cabal build
 
 test: build
-	dist/build/test/test
+	find $(TESTDIR) -type f -name test -exec {} \;
 
 bench: build
 	dist/build/bench/bench
