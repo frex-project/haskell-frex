@@ -27,9 +27,9 @@ fold1 n c d Nil1 = n
 fold1 n c d (Cons1 x xs) = c x (fold1 n c d xs)
 fold1 n c d (Dyn1 y) = d y
 
-sum1 :: PSIList1 -> FreeExt Monoid Code (Sum Int)
+sum1 :: PSIList1 -> FreeExt Monoid (Code (Sum Int)) (Sum Int)
 sum1 = fold1 mempty (\s d -> sta (Sum s) `mappend` d)
-         (\(Code d) -> dyn (Code [|| Sum (sum $$d) ||]))
+         (\d -> dyn [|| Sum (sum $$d) ||])
 
 -- 2. partially-static integer lists via a generic fixed point operator
 newtype Fix f = Roll { unRoll :: f (Fix f) }
@@ -76,11 +76,11 @@ fold2 s d (Sta Nil) = s Nil
 fold2 s d (Sta (Cons x xs)) = s (Cons x (fold2 s d xs))
 fold2 s d (Dyn c) = d c
 
-sum2 :: PSIList2 -> FreeExt Monoid Code (Sum Int)
+sum2 :: PSIList2 -> FreeExt Monoid (Code (Sum Int)) (Sum Int)
 sum2 = fold2 s d
   where s Nil = mempty
         s (Cons x xs) = sta (Sum x) `mappend` xs
-        d (Code c) = dyn (Code [|| Sum (sum2' $$c) ||])
+        d c = dyn [|| Sum (sum2' $$c) ||]
 
 
 
@@ -132,7 +132,7 @@ data Empty
 -- Initial IList algebra
 type IntList = FreeA (Alg IList) Empty
 
-type PSIList3 = FreeExt (Alg IList) Code IntList
+type PSIList3 = FreeExt (Alg IList) (Code IntList) IntList
 
 nil3' :: IntList
 nil3' = alg Nil
@@ -158,12 +158,12 @@ infixr 5 `cons3`, `cons3'`
 dyn3 :: Code (IntList) →  PSIList3
 dyn3 = dyn
 
-instance Alg IList (FreeExt Monoid name (Sum Int)) where
+instance Alg IList (FreeExt Monoid (Code (Sum Int)) (Sum Int)) where
   alg Nil = mempty
   alg (Cons x xs) = sta (Sum x) `mappend` xs
   
-sum3 :: PSIList3 -> FreeExt Monoid Code (Sum Int)
+sum3 :: PSIList3 -> FreeExt Monoid (Code (Sum Int)) (Sum Int)
 sum3 = eva (`pbind` g) (`pbind` d)
   where g _ = alg Nil
-        d (Code c) = dyn (Code [|| Sum (sum3' $$c) ||])
+        d c = dyn [|| Sum (sum3' $$c) ||]
 

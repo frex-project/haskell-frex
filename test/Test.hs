@@ -18,10 +18,10 @@ import qualified Datatypes
 import qualified IsDigit
 import Datatypes (PSIList1 (..), cons2, nil2, dyn2, cons2', nil2', cons3, nil3, cons3', nil3', dyn3)
 
-showCode ::  Code a → IO String
-showCode (Code c) = do e ← runQ (liftM unType c) ; return $ pprint e
+showCode ::  Q (TExp a) → IO String
+showCode c = do e ← runQ (liftM unType c) ; return $ pprint e
 
-printCode :: String -> Code a → IO ()
+printCode :: String -> Q (TExp a) → IO ()
 printCode description c = do
   e ← showCode c
   putStrLn $ "  " ++ description ++ "\n"
@@ -73,15 +73,15 @@ main = do
   assertEqual (Power.power 3 7 :: Product Int) 2187
 
   printCode "Naive staging (7 multiplications)"
-    (Power.power (Code [|| 3 ||] :: Code Int) 7 )
+    (Power.power ([|| 3 ||] :: Q (TExp Int)) 7 )
 
   printCode "Staging with partially-static data (4 multiplications)"
-    (Power.cdPower (Power.power (dyn (Code [|| Product 3 ||])) 7))
+    (Power.cdPower (Power.power (dyn [|| Product 3 ||]) 7))
 
   printCode "combining separated calls to 'power' (4 multiplications)"
-    (Code [|| \x' y' ->
-         $$(let x = dyn (Code [||x'||]) ; y = dyn (Code [||y'||]) in
-            code $ Power.cdPower
+    ([|| \x' y' ->
+         $$(let x = dyn [||x'||] ; y = dyn [||y'||] in
+            Power.cdPower
              (Power.power x 3 `mappend` y `mappend` Power.power x 3)) ||])
 
 
@@ -92,10 +92,10 @@ main = do
   startSection "Inner product"
 
   printCode "Staging with partially-static data"
-    (Code [|| \y₁ y₂ y₃ → 
+    ([|| \y₁ y₂ y₃ → 
          $$(let v₁ = [sta 0,         sta 3       , sta 1        ]
-                v₂ = [dyn (Code [||y₁||]) , dyn (Code [||y₂||]), dyn (Code [||y₃||]) ]
-             in code $ LinAlg.cdNumRing $ (LinAlg.dot v₁ v₂ :: FreeExt Ring Code Int)) ||])
+                v₂ = [dyn [||y₁||] , dyn [||y₂||], dyn [||y₃||] ]
+             in LinAlg.cdNumRing $ (LinAlg.dot v₁ v₂ :: FreeExt Ring (Code Int) Int)) ||])
 
   endSection
 
@@ -104,29 +104,29 @@ main = do
   startSection "All and any"
 
   printCode "Staging 'all' with partially-static data"
-    (Code [|| \x →
-         $$(code $ All.cdBool (All.all (even, Code [||even||])
-                (sta [2,4] `mappend` dyn (Code [||x||]) `mappend` sta [3]))) ||])
+    ([|| \x →
+         $$(All.cdBool (All.all (even, [||even||])
+                (sta [2,4] `mappend` dyn [||x||] `mappend` sta [3]))) ||])
 
   printCode "Staging 'all' with more partially-static data"
-    (Code [|| \x →
-         $$(code $ All.cdBool (All.all (even, Code [||even||])
-                (sta [2,4] `mappend` dyn (Code [||x||]) `mappend` sta [2]))) ||])
+    ([|| \x →
+         $$(All.cdBool (All.all (even, [||even||])
+                (sta [2,4] `mappend` dyn [||x||] `mappend` sta [2]))) ||])
 
   printCode "Staging 'any' with partially-static data (1)"
-    (Code [|| \x →
-         $$(code $ All.cdBool (All.any (even, Code [||even||])
-                (sta [2,4] `mappend` dyn (Code [||x||]) `mappend` sta [3]))) ||])
+    ([|| \x →
+         $$(All.cdBool (All.any (even, [||even||])
+                (sta [2,4] `mappend` dyn [||x||] `mappend` sta [3]))) ||])
 
   printCode "Staging 'any' with partially-static data (2)"
-    (Code [|| \x →
-         $$(code $ All.cdBool (All.any (even, Code [||even||])
-                (sta [1,3] `mappend` dyn (Code [||x||]) `mappend` sta [2] `mappend` dyn (Code [||x||])))) ||])
+    ([|| \x →
+         $$(All.cdBool (All.any (even, [||even||])
+                (sta [1,3] `mappend` dyn [||x||] `mappend` sta [2] `mappend` dyn [||x||]))) ||])
 
   printCode "Staging 'any' with partially-static data (3)"
-    (Code [|| \x →
-         $$(code $ All.cdBool (All.any (even, Code [||even||])
-                (sta [1,3] `mappend` dyn (Code [||x||]) `mappend` sta [3]))) ||])
+    ([|| \x →
+         $$(All.cdBool (All.any (even, [||even||])
+                (sta [1,3] `mappend` dyn [||x||] `mappend` sta [3]))) ||])
 
   endSection
 
@@ -138,22 +138,22 @@ main = do
     (cd (IsDigit.isDigit (sta '3')))
 
   printCode "IsDigit with a dynamic argument"
-    (Code [|| \x -> $$(code $ cd (IsDigit.isDigit (dyn (Code [||x||])))) ||])
+    [|| \x -> $$(cd (IsDigit.isDigit (dyn [||x||]))) ||]
 
   endSection
 
 
   startSection "Partially-static algebraic datatypes"
 
-  let psList1 = 1 `Cons1` 2 `Cons1` 3 `Cons1` Dyn1 (Code [|| [4, 5, 6] ||])
+  let psList1 = 1 `Cons1` 2 `Cons1` 3 `Cons1` Dyn1 [|| [4, 5, 6] ||]
   printCode "Staging with partially-static data (concrete)"
     (cd (Datatypes.sum1 psList1))
 
-  let psList2 = 1 `cons2` 2 `cons2` 3 `cons2` dyn2 (Code [|| 4 `cons2'` 5 `cons2'` 6 `cons2'` nil2' ||])
+  let psList2 = 1 `cons2` 2 `cons2` 3 `cons2` dyn2 [|| 4 `cons2'` 5 `cons2'` 6 `cons2'` nil2' ||]
   printCode "Staging with partially-static data (open-recursive / F-algebra)"
     (cd (Datatypes.sum2 psList2))
 
-  let psList3 = 1 `cons3` 2 `cons3` 3 `cons3` dyn3 (Code [|| 4 `cons3'` 5 `cons3'` 6 `cons3'` nil3' ||])
+  let psList3 = 1 `cons3` 2 `cons3` 3 `cons3` dyn3 [|| 4 `cons3'` 5 `cons3'` 6 `cons3'` nil3' ||]
   printCode "Staging with partially-static data (coproducts)"
     (cd (Datatypes.sum3 psList3))
   

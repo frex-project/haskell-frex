@@ -10,7 +10,7 @@ import qualified Data.Map as Map
 import qualified Data.MultiSet as MultiSet
 import Language.Haskell.TH.Syntax (Lift)
 
-type PsIntRing = FreeExt Ring Code Int
+type PsIntRing = FreeExt Ring (Code Int) Int
 
 dot :: Ring r ⇒ [r] → [r] → r
 dot xs ys = sumr (zipWith (⊗) xs ys)
@@ -18,28 +18,28 @@ dot xs ys = sumr (zipWith (⊗) xs ys)
 sumr :: Ring r ⇒ [r] → r
 sumr = foldr (⊕) r₀
 
-cdNumRing :: (Num n, Eq n, Ring (Code n), Lift n) ⇒ FreeExt Ring Code n → Code n
+cdNumRing :: (Num n, Eq n, Ring (Code n), Lift n) ⇒ FreeExt Ring (Code n) n → Code n
 cdNumRing (CR (MN m)) = cd $ sumBits $ Map.assocs m
  where
   sumBits = foldr (\(xs, c) r → (prodVars xs `prod2` sta c) `sum2` r) (sta 0)
   prodVars = prodN . map dyn . MultiSet.elems
 
 -- TODO: we could simplify further here, reducing the number of multiplications as for 'power'
-prodN :: (Num n, Eq n, Lift n) ⇒ [FreeExt Set Code n] → FreeExt Set Code n
+prodN :: (Num n, Eq n, Lift n) ⇒ [FreeExt Set (Code n) n] → FreeExt Set (Code n) n
 prodN = foldr prod2 (sta 1)
 
-sum2 :: (Num n, Eq n, Lift n) ⇒ FreeExt Set Code n → FreeExt Set Code n → FreeExt Set Code n
+sum2 :: (Num n, Eq n, Lift n) ⇒ FreeExt Set (Code n) n → FreeExt Set (Code n) n → FreeExt Set (Code n) n
 sum2 (Inl 0) r = r
 sum2 l (Inl 0) = l
 sum2 (Inl l) (Inl r) = sta (l + r)
-sum2 l r = dyn (Code [|| $$(code (cd l)) + $$(code (cd r)) ||])
+sum2 l r = dyn [|| $$(cd l) + $$(cd r) ||]
 
-prod2 :: (Num n, Eq n, Lift n) ⇒ FreeExt Set Code n → FreeExt Set Code n → FreeExt Set Code n
+prod2 :: (Num n, Eq n, Lift n) ⇒ FreeExt Set (Code n) n → FreeExt Set (Code n) n → FreeExt Set (Code n) n
 prod2 _ (Inl 0) = sta 0
 prod2 (Inl 0) _ = sta 0
 prod2 x (Inl 1) = x
 prod2 (Inl 1) y = y
-prod2 l r = dyn (Code [|| $$(code (cd l)) * $$(code (cd r)) ||])
+prod2 l r = dyn [|| $$(cd l) * $$(cd r) ||]
 
 
 -- matrix-matrix multiplication

@@ -20,32 +20,29 @@ deriving instance Enum n ⇒ Enum (Product n)
 -- A destructor that does better than the default.
 -- (Could we make this the default?  'eva' doesn't know about
 --  code and 'PartiallyStatic.cd' doesn't know about CMonoid).
-cdPower :: FreeExt CMonoid Code (Product Int) -> Code Int
-cdPower (C 0 (CM r)) = Code [|| 0 ||]
-cdPower (C 1 (CM r)) = powerVn (toOccurList r)
-                       (\(Code x) -> Code [|| getProduct $$x ||])
-cdPower (C l (CM r)) = powerVn (toOccurList r)
-                       (\(Code x) -> Code [|| getProduct (l * $$x) ||])
+cdPower :: FreeExt CMonoid (Code (Product Int)) (Product Int) -> Code Int
+cdPower (C 0 (CM r)) = [|| 0 ||]
+cdPower (C 1 (CM r)) = powerVn (toOccurList r) (\x -> [|| getProduct $$x ||])
+cdPower (C l (CM r)) = powerVn (toOccurList r) (\x -> [|| getProduct (l * $$x) ||])
 
 
 -- reducing multiplications for one variable
 powerV1 :: (Integral a, Lift a) => Int -> Code a -> (Code a -> Code b) -> Code b
-powerV1 0 x k = k (Code [|| 1 ||])
+powerV1 0 x k = k [|| 1 ||]
 powerV1 1 x k = k x
-powerV1 n (Code x) k | even n = Code [|| let y = $$x * $$x in
-                                         $$(code (powerV1 (n `div` 2) (Code [||y||]) k)) ||]
-                     | otherwise = Code [|| let y = $$x * $$x in
-                                            $$(code (powerV1 ((n - 1) `div` 2) (Code [||y||])
-                                               (\(Code z) ->
-                                                   k (Code [|| $$x * $$z ||]))))||]
+powerV1 n x k | even n = [|| let y = $$x * $$x in
+                            $$(powerV1 (n `div` 2) [||y||] k) ||]
+             | otherwise = [|| let y = $$x * $$x in
+                            $$(powerV1 ((n - 1) `div` 2) [||y||]
+                              (\z -> k [|| $$x * $$z ||]))||]
 
 -- reducing multiplications for multiple variables
 powerVn :: (Integral a, Lift a) => [(Code a, Int)] -> (Code a -> Code b) -> Code b
-powerVn [] k = k (Code [|| 1 ||])
+powerVn [] k = k [|| 1 ||]
 powerVn [(x, n)] k = powerV1 n x k
-powerVn ((x,n):xs) k = powerV1 n x $ \(Code y) ->
-                       powerVn xs $ \(Code z) ->
-                       k (Code [|| $$y * $$z ||])
+powerVn ((x,n):xs) k = powerV1 n x $ \y ->
+                       powerVn xs $ \z ->
+                       k [|| $$y * $$z ||]
 
 -- the example code itself
 power :: CMonoid i ⇒ i → Int → i
