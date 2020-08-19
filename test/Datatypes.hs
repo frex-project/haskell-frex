@@ -17,19 +17,19 @@ import Language.Haskell.TH.Syntax
 data PSIList1 where
   Nil1 :: PSIList1
   Cons1 :: Int → PSIList1 → PSIList1
-  Dyn1 :: Q (TExp ([Int])) → PSIList1
+  Dyn1 :: Code [Int] → PSIList1
 
 infixr 5 `Cons1`
 
 
-fold1 :: b -> (Int -> b -> b) -> (Q (TExp ([Int])) -> b) -> PSIList1 -> b
+fold1 :: b -> (Int -> b -> b) -> (Code [Int] -> b) -> PSIList1 -> b
 fold1 n c d Nil1 = n
 fold1 n c d (Cons1 x xs) = c x (fold1 n c d xs)
 fold1 n c d (Dyn1 y) = d y
 
-sum1 :: PSIList1 -> FreeExt Monoid (Sum Int)
+sum1 :: PSIList1 -> FreeExt Monoid Code (Sum Int)
 sum1 = fold1 mempty (\s d -> sta (Sum s) `mappend` d)
-         (\d -> dyn [|| Sum (sum $$d) ||])
+         (\(Code d) -> dyn (Code [|| Sum (sum $$d) ||]))
 
 -- 2. partially-static integer lists via a generic fixed point operator
 newtype Fix f = Roll { unRoll :: f (Fix f) }
@@ -57,7 +57,7 @@ sum2' = fold2' s
 
 data PSFix f where
   Sta :: f (PSFix f) → PSFix f 
-  Dyn :: Q (TExp (Fix f)) → PSFix f 
+  Dyn :: Code (Fix f) → PSFix f 
 
 type PSIList2 = PSFix IList
 
@@ -67,20 +67,20 @@ nil2 = Sta Nil
 cons2 :: Int → PSIList2 → PSIList2
 cons2 x xs = Sta (Cons x xs)
 
-dyn2 :: Q (TExp (Fix IList)) → PSIList2
+dyn2 :: Code (Fix IList) → PSIList2
 dyn2 = Dyn
 
 
-fold2 :: (IList b -> b) -> (Q (TExp (Fix IList)) -> b) -> PSFix IList -> b
+fold2 :: (IList b -> b) -> (Code (Fix IList) -> b) -> PSFix IList -> b
 fold2 s d (Sta Nil) = s Nil
 fold2 s d (Sta (Cons x xs)) = s (Cons x (fold2 s d xs))
 fold2 s d (Dyn c) = d c
 
-sum2 :: PSIList2 -> FreeExt Monoid (Sum Int)
+sum2 :: PSIList2 -> FreeExt Monoid Code (Sum Int)
 sum2 = fold2 s d
   where s Nil = mempty
         s (Cons x xs) = sta (Sum x) `mappend` xs
-        d c = dyn [|| Sum (sum2' $$c) ||]
+        d (Code c) = dyn (Code [|| Sum (sum2' $$c) ||])
 
 
 
@@ -132,7 +132,7 @@ data Empty
 -- Initial IList algebra
 type IntList = FreeA (Alg IList) Empty
 
-type PSIList3 = FreeExt (Alg IList) IntList
+type PSIList3 = FreeExt (Alg IList) Code IntList
 
 nil3' :: IntList
 nil3' = alg Nil
@@ -158,12 +158,12 @@ infixr 5 `cons3`, `cons3'`
 dyn3 :: Code (IntList) →  PSIList3
 dyn3 = dyn
 
-instance Alg IList (FreeExt Monoid (Sum Int)) where
+instance Alg IList (FreeExt Monoid name (Sum Int)) where
   alg Nil = mempty
   alg (Cons x xs) = sta (Sum x) `mappend` xs
   
-sum3 :: PSIList3 -> FreeExt Monoid (Sum Int)
+sum3 :: PSIList3 -> FreeExt Monoid Code (Sum Int)
 sum3 = eva (`pbind` g) (`pbind` d)
   where g _ = alg Nil
-        d c = dyn [|| Sum (sum3' $$c) ||]
+        d (Code c) = dyn (Code [|| Sum (sum3' $$c) ||])
 

@@ -4,6 +4,6 @@ import Data.Coproduct
 import Data.PartiallyStatic
 import qualified Data.Char as Char
 
-isDigit :: FreeExt Set Char → FreeExt Set Bool
+isDigit :: FreeExt Set Code Char → FreeExt Set Code Bool
 isDigit = eva (sta . Char.isDigit)
-              ((\(F x) → dyn [|| Char.isDigit $$x ||]))
+              ((\(F (Code x)) → dyn (Code [|| Char.isDigit $$x ||])))
