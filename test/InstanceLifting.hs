@@ -20,53 +20,53 @@ $(deriveLift ''Product)
 -- deriving instance Lift a ⇒ Lift (Product a)
 
 instance {-# OVERLAPS #-} Monoid m ⇒ Semigroup (Code m) where
-   Code x <> Code  y = Code [|| $$x `mappend` $$y ||]
+   x <> y = [|| $$x `mappend` $$y ||]
   
 instance {-# OVERLAPS #-} Monoid m ⇒ Monoid (Code m) where
-   mempty = Code [|| mempty ||]
+   mempty = [|| mempty ||]
    
 instance {-# OVERLAPS #-} Semigroup (Code String) where
-   Code x <> Code y = Code [|| $$x ++ $$y ||] 
+   x <> y = [|| $$x ++ $$y ||] 
 
 instance {-# OVERLAPS #-} Monoid (Code String) where
-   mempty = Code [|| "" ||]
+   mempty = [|| "" ||]
 
 instance CGroup (Code Int) where
-  cinv (Code x) = Code [|| - $$x ||]
+  cinv x = [|| - $$x ||]
 instance CMonoid (Code Int) where
   
 instance Semigroup (Code Int) where
-  Code x <> Code y = Code [|| $$x + $$y ||]
+  x <> y = [|| $$x + $$y ||]
 
 instance Monoid (Code Int) where
-  mempty = Code [|| 0 ||]
+  mempty = [|| 0 ||]
 
 instance CMonoid (Code Bool) where
 instance CGroup (Code Bool) where
   cinv = id
 instance Semigroup (Code Bool) where
-  Code x <> Code y = Code [|| $$x && $$y ||]
+  x <> y = [|| $$x && $$y ||]
 instance Monoid (Code Bool) where
-  mempty = Code [|| True ||]
+  mempty = [|| True ||]
 
 instance BoolRing (Code Bool)
 
 instance Ring (Code Int) where
-  Code x ⊕ Code y = Code [|| $$x + $$y ||]
-  Code x ⊗ Code y = Code [|| $$x * $$y ||]
-  rneg (Code x) = Code [|| - $$x ||]
-  r₀ = Code [|| 0 ||]
-  r₁ = Code [|| 1 ||]
+  x ⊕ y = [|| $$x + $$y ||]
+  x ⊗ y = [|| $$x * $$y ||]
+  rneg x = [|| - $$x ||]
+  r₀ = [|| 0 ||]
+  r₁ = [|| 1 ||]
 
 instance Ring (Code Bool) where
-  Code x ⊕ Code y = Code [|| $$x /= $$y ||]
-  Code x ⊗ Code y = Code [|| $$x && $$y ||]
-  rneg (Code x) = Code [|| $$x ||]
-  r₀ = Code [|| False ||]
-  r₁ = Code [|| True ||]
+  x ⊕ y = [|| $$x /= $$y ||]
+  x ⊗ y = [|| $$x && $$y ||]
+  rneg x = [|| $$x ||]
+  r₀ = [|| False ||]
+  r₁ = [|| True ||]
 
 instance DLattice (Code Bool) where
-  Code x ⊕ Code y = Code [|| $$x || $$y ||]
-  Code x ⊗ Code y = Code [|| $$x && $$y ||]
-  r₀ = Code [|| False ||]
-  r₁ = Code [|| True ||]
+  x ⊕ y = [|| $$x || $$y ||]
+  x ⊗ y = [|| $$x && $$y ||]
+  r₀ = [|| False ||]
+  r₁ = [|| True ||]

@@ -35,33 +35,33 @@ newtype FmtS r a = FmtS {fmtS :: (Code String → r) → (Code String → a)}
 
 instance Format FmtS where
   type Acc FmtS α = Code α
-  lit x = FmtS $ \k (Code s) → k (Code [|| $$s ++ x ||])
+  lit x = FmtS $ \k s → k [|| $$s ++ x ||]
   f `cat` g = FmtS (fmtS f . fmtS g)
-  int = FmtS $ \k (Code s) (Code x) → k (Code [|| $$s ++ show $$x ||])
-  str = FmtS $ \k (Code s) (Code x) → k (Code [|| $$s ++ $$x ||])
-  sprintf p = fmtS p id (Code [|| "" ||])
+  int = FmtS $ \k s x → k [|| $$s ++ show $$x ||]
+  str = FmtS $ \k s x → k [|| $$s ++ $$x ||]
+  sprintf p = fmtS p id [|| "" ||]
 
 -- partially-static printf
-newtype FmtPS r a = FmtPS { fmtPS :: (FreeExt Monoid Code String → r) →
-                                     (FreeExt Monoid Code String → a) }
+newtype FmtPS r a = FmtPS { fmtPS :: (FreeExt Monoid (Code String) String → r) →
+                                     (FreeExt Monoid (Code String) String → a) }
 
 instance Format FmtPS where
   type Acc FmtPS α = Code α
   lit x = FmtPS $ \k s → k (s `mappend` sta x)
   f `cat` g = FmtPS (fmtPS f . fmtPS g)
-  int = FmtPS $ \k s (Code x) → k (s `mappend` dyn (Code [|| show $$x ||]))
+  int = FmtPS $ \k s x → k (s `mappend` dyn [|| show $$x ||])
   str = FmtPS $ \k s x → k (s `mappend` dyn x)
   sprintf (FmtPS p) = p cd mempty
 
 -- partially-static printf with n-ary destructor function
-newtype FmtPS2 r a = FmtPS2 { fmtPS2 :: (FreeExt Monoid Code String → r) →
-                                        (FreeExt Monoid Code String → a) }
+newtype FmtPS2 r a = FmtPS2 { fmtPS2 :: (FreeExt Monoid (Code String) String → r) →
+                                        (FreeExt Monoid (Code String) String → a) }
 
 instance Format FmtPS2 where
   type Acc FmtPS2 α = Code α
   lit x = FmtPS2 $ \k s → k (s `mappend` sta x)
   f `cat` g = FmtPS2 (fmtPS2 f . fmtPS2 g)
-  int = FmtPS2 $ \k s (Code x) → k (s `mappend` dyn (Code [|| show $$x ||]))
+  int = FmtPS2 $ \k s x → k (s `mappend` dyn [|| show $$x ||])
   str = FmtPS2 $ \k s x → k (s `mappend` dyn x)
   sprintf (FmtPS2 p) = p cdStrings mempty
 
@@ -72,26 +72,26 @@ unstagedExample :: Int → Int → String
 unstagedExample = sprintf (exampleFmt :: Fmt _ _)
 
 stagedCode :: Code (Int → Int → String)
-stagedCode = Code [|| \x y → $$(code (sprintf (exampleFmt :: FmtS _ _) (Code [||x||]) (Code [||y||]))) ||]
+stagedCode = [|| \x y → $$(sprintf (exampleFmt :: FmtS _ _) [||x||] [||y||]) ||]
 
 psCode :: Code (Int → Int → String)
-psCode = Code [|| \x y → $$(code (sprintf (exampleFmt :: FmtPS _ _) (Code [||x||]) (Code [||y||]))) ||]
+psCode = [|| \x y → $$(sprintf (exampleFmt :: FmtPS _ _) [||x||] [||y||]) ||]
 
 -- a destructor for strings that generates a single n-ary concatenation
-cdStrings :: FreeExt Monoid Code String -> Code String
-cdStrings m = Code [|| Prelude.concat $$(code (liftList (eva g h m))) ||]
+cdStrings :: FreeExt Monoid (Code String) String -> Code String
+cdStrings m = [|| Prelude.concat $$(liftList (eva g h m)) ||]
   where g "" = []
-        g s = [Code [||s||]]
+        g s = [[||s||]]
         h (P s) = s
 
 liftList :: [Code a] -> Code [a]
-liftList [] = Code [||[]||]
-liftList (Code x:xs) = Code [||$$x : $$(code (liftList xs))||]
+liftList [] = [||[]||]
+liftList (x:xs) = [||$$x : $$(liftList xs)||]
 
 sprintfN (FmtPS p) = p cdStrings mempty
 
 psCodeN :: Code (Int → Int → String)
-psCodeN = Code [|| \x y → $$(code (sprintfN exampleFmt (Code [||x||]) (Code [||y||]))) ||]
+psCodeN = [|| \x y → $$(sprintfN exampleFmt [||x||] [||y||]) ||]
 
 benchFmt :: Format f => f c (Acc f String
                           -> Acc f String
