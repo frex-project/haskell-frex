@@ -3,7 +3,6 @@
 module Data.CMonoid where
 
 import Data.Semigroup
-import Data.Monoid
 import Data.Coproduct.Classes (Free(..))
 import Data.MultiSet
 

@@ -12,7 +12,6 @@ import qualified Data.MultiSet as MultiSet
 import qualified Data.Set as Set
 
 import Data.CMonoid
-import Data.Semigroup
 import Data.CGroup
 import Data.Ring
 import Data.BoolRing
