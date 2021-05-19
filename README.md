@@ -6,6 +6,6 @@ A Typed Template Haskell library for structured multi-stage programming, describ
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Jeremy Yallop, Tamara von Glehn and Ohad Kammar<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[ICFP 2018](http://icfp18.sigplan.org/)<br/>
 
-See also: the [MetaOCaml version of frex](https://github.com/yallop/metaocaml-frex).
+See also: the [MetaOCaml version of frex](https://github.com/frex-project/metaocaml-frex).
 
-![GitHub Actions status](https://github.com/yallop/haskell-frex/workflows/build/badge.svg)
+![GitHub Actions status](https://github.com/frex-project/haskell-frex/workflows/build/badge.svg)
