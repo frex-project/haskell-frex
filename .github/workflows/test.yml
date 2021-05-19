@@ -6,7 +6,9 @@ jobs:
     runs-on: ubuntu-latest # or macOS-latest, or windows-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-haskell@v1.1
+      - uses: haskell/actions/setup@v1
+        with:
+          ghc-version: '8.6'
       - run: cabal configure
       - run: make
       - run: make test
