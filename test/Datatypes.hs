@@ -11,7 +11,7 @@ import Data.Coproduct
 
 import Data.Monoid
 import Data.PartiallyStatic
-import Language.Haskell.TH.Syntax
+import Language.Haskell.TH.Syntax hiding (Code)
 
 -- 1. partially-static integer lists, concretely
 data PSIList1 where

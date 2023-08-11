@@ -2,10 +2,11 @@
 
 module Data.PartiallyStatic where
 import Data.Coproduct
-import Language.Haskell.TH.Syntax
+import Language.Haskell.TH.Syntax hiding (Code)
+import qualified Language.Haskell.TH.Syntax as TH
 import Control.Monad (liftM)
 
-type Code a = Q (TExp a)
+type Code a = TH.Code Q a
 
 -- Free extension
 type FreeExt algebra name α = Coprod algebra α (FreeA algebra name)
@@ -27,4 +28,4 @@ cd :: (Lift α, Free algebra (Code α), algebra (Code α),
 cd = eva tlift (`pbind` id)
 
 tlift :: Lift α ⇒ α → Code α
-tlift = liftM TExp . lift
+tlift = liftCode . liftM TExp . lift

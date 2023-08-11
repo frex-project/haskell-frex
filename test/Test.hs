@@ -3,7 +3,8 @@ module Main where
 import System.Exit
 import Control.Monad (liftM, when)
 import Language.Haskell.TH (runQ, pprint, unType)
-import Language.Haskell.TH.Syntax
+import Language.Haskell.TH.Syntax hiding (Code)
+import qualified Language.Haskell.TH.Syntax as TH
 import Data.PartiallyStatic
 import Data.Monoid
 import Data.CMonoid
@@ -18,10 +19,10 @@ import qualified Datatypes
 import qualified IsDigit
 import Datatypes (PSIList1 (..), cons2, nil2, dyn2, cons2', nil2', cons3, nil3, cons3', nil3', dyn3)
 
-showCode ::  Q (TExp a) → IO String
-showCode c = do e ← runQ (liftM unType c) ; return $ pprint e
+showCode ::  Code a → IO String
+showCode c = do e ← runQ (liftM unType (examineCode c)) ; return $ pprint e
 
-printCode :: String -> Q (TExp a) → IO ()
+printCode :: String -> Code a → IO ()
 printCode description c = do
   e ← showCode c
   putStrLn $ "  " ++ description ++ "\n"
@@ -73,7 +74,7 @@ main = do
   assertEqual (Power.power 3 7 :: Product Int) 2187
 
   printCode "Naive staging (7 multiplications)"
-    (Power.power ([|| 3 ||] :: Q (TExp Int)) 7 )
+    (Power.power ([|| 3 ||] :: Code Int) 7) 
 
   printCode "Staging with partially-static data (4 multiplications)"
     (Power.cdPower (Power.power (dyn [|| Product 3 ||]) 7))

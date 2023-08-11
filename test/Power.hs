@@ -8,7 +8,7 @@ import Data.Monoid
 import Data.CMonoid
 import Data.Coproduct
 import InstanceLifting
-import Language.Haskell.TH.Syntax
+import Language.Haskell.TH.Syntax hiding (Code)
 import Data.PartiallyStatic
 import Control.Monad (liftM)
 import Data.MultiSet
