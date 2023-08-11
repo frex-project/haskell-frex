@@ -10,6 +10,7 @@ import Data.Coproduct.Classes
 import qualified Data.Map as Map
 import qualified Data.MultiSet as MultiSet
 import qualified Data.Set as Set
+import Data.Kind
 
 import Data.CMonoid
 import Data.CGroup
@@ -25,7 +26,7 @@ import Data.DLattice
 {-- Coproduct of monoids --}
 data AorB = A | B
 
-data Alternate :: AorB → ★ → ★ → ★ where
+data Alternate :: AorB → Type → Type → Type where
    Empty :: Alternate any a b
    ConsA :: a → Alternate B a b → Alternate A a b
    ConsB :: b → Alternate A a b → Alternate B a b

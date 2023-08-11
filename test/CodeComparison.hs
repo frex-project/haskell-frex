@@ -4,7 +4,7 @@ module CodeComparison where
 
 import Data.PartiallyStatic (Code)
 import Control.Monad (liftM)
-import Language.Haskell.TH (runQ, pprint, unType)
+import Language.Haskell.TH (runQ, pprint, unType, examineCode)
 
 import System.IO.Unsafe (unsafePerformIO)
 
@@ -15,7 +15,7 @@ import System.IO.Unsafe (unsafePerformIO)
 
 unsafeStringOf :: Code α → String
 unsafeStringOf x = unsafePerformIO $ 
-                   (liftM pprint $ runQ (liftM unType x))
+                   (liftM pprint $ runQ (liftM unType (examineCode x)))
 
 instance Eq (Code α) where x == y = unsafeStringOf x == unsafeStringOf y
 instance Ord (Code α)  where x <= y = unsafeStringOf x <= unsafeStringOf y
